@@ -1,5 +1,8 @@
+DROP DATABASE IF EXISTS `concerttix`;
+CREATE DATABASE IF NOT EXISTS `concerttix`;
+USE `concerttix`;
 
-CREATE TABLE Companies (
+CREATE TABLE IF NOT EXISTS Companies (
     company_code VARCHAR(10) PRIMARY KEY,
     company_name VARCHAR(50),
     address_line1 VARCHAR(50),
@@ -13,7 +16,7 @@ CREATE TABLE Companies (
     status ENUM('active', 'dissolved')
 );
 
-CREATE TABLE Artists (
+CREATE TABLE IF NOT EXISTS Artists (
     artist_code VARCHAR(10) PRIMARY KEY,
     company_code VARCHAR(10),
     stage_name VARCHAR(50),
@@ -26,7 +29,7 @@ CREATE TABLE Artists (
     FOREIGN KEY (company_code) REFERENCES Companies(company_code)
 );
 
-CREATE TABLE Venues (
+CREATE TABLE IF NOT EXISTS Venues (
     venue_code VARCHAR(10) PRIMARY KEY,
     venue_name VARCHAR(50),
     address_line1 VARCHAR(50),
@@ -39,7 +42,7 @@ CREATE TABLE Venues (
     total_available_seats INT
 );
 
-CREATE TABLE Concerts (
+CREATE TABLE IF NOT EXISTS Concerts (
     concert_code VARCHAR(10) PRIMARY KEY,
     artist_code VARCHAR(10),
     venue_code VARCHAR(10),
@@ -55,7 +58,7 @@ CREATE TABLE Concerts (
     FOREIGN KEY (venue_code) REFERENCES Venues(venue_code)
 );
 
-CREATE TABLE Customers (
+CREATE TABLE IF NOT EXISTS Customers (
     customer_code VARCHAR(10) PRIMARY KEY,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
@@ -63,7 +66,7 @@ CREATE TABLE Customers (
     contact_number VARCHAR(15)
 );
 
-CREATE TABLE Transactions (
+CREATE TABLE IF NOT EXISTS Transactions (
     transaction_code VARCHAR(10) PRIMARY KEY,
     customer_code VARCHAR(10),
     transaction_type ENUM('buy', 'refund', 'transfer', 'cancel'),
@@ -75,7 +78,7 @@ CREATE TABLE Transactions (
     FOREIGN KEY (customer_code) REFERENCES Customers(customer_code)
 );
 
-CREATE TABLE Tickets (
+CREATE TABLE IF NOT EXISTS Tickets (
     ticket_code VARCHAR(10) PRIMARY KEY,
     concert_code VARCHAR(10),
     customer_code VARCHAR(10),
