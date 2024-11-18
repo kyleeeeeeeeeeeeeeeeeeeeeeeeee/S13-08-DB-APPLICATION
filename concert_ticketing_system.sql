@@ -19,7 +19,6 @@ CREATE TABLE Artists (
     stage_name VARCHAR(50),
     first_name VARCHAR(50),
     last_name VARCHAR(50),
-    actual_name VARCHAR(50),
     birth_date DATETIME,
     email VARCHAR(50),
     contact_number VARCHAR(15),
