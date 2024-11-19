@@ -70,10 +70,40 @@ public class ConcertReports {
         // Implement the logic here
     }
 
-    private void concertAnalysis() {
-        System.out.println("Concert Analysis Report functionality is under development.");
-        // Implement the logic here
+private void concertAnalysis() {
+    System.out.println("\n--- Concert Analysis Report ---");
+    int year = MyJDBC.getUserInput("Enter year for the report: ");
+    String query = """
+        SELECT 
+            Concerts.concert_code, Concerts.performer_name, COUNT(Tickets.ticket_code) AS total_tickets_sold
+        FROM Concerts
+        LEFT JOIN Tickets ON Concerts.concert_code = Tickets.concert_code
+        WHERE YEAR(Concerts.start_time) = ?
+        GROUP BY Concerts.concert_code, Concerts.performer_name
+        ORDER BY total_tickets_sold DESC;
+    """;
+
+    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        stmt.setInt(1, year);
+        try (ResultSet rs = stmt.executeQuery()) {
+            System.out.printf("\n%-15s %-25s %-15s\n", "Concert Code", "Performer", "Tickets Sold");
+            System.out.println("-------------------------------------------------------------");
+
+            boolean hasResults = false;
+            while (rs.next()) {
+                hasResults = true;
+                System.out.printf("%-15d %-25s %-15d\n",
+                        rs.getInt("concert_code"), rs.getString("performer_name"), rs.getInt("total_tickets_sold"));
+            }
+
+            if (!hasResults) {
+                System.out.println("No concert data found for the given year.");
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Error generating concert analysis report: " + e.getMessage());
     }
+}
 
     private void topSales() {
         System.out.println("Top Sales Report functionality is under development.");
