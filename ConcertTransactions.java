@@ -70,10 +70,95 @@ public class ConcertTransactions {
         // Implement logic here
     }
 
-    private void refundTickets() {
-        System.out.println("Ticket Refunding functionality is under development.");
-        // Implement logic here
+private void refundTickets() {
+    System.out.println("\n--- Refund Tickets ---");
+    int customerId = MyJDBC.getUserInput("Enter Customer ID: ");
+    String ticketIdsInput = MyJDBC.getUserStringInput("Enter Ticket IDs to refund (comma-separated): ");
+    String[] ticketIds = ticketIdsInput.split(",");
+
+    final double REFUND_FEE_PERCENTAGE = 0.10; // 10% refund fee
+
+    try {
+        connection.setAutoCommit(false);
+
+        // Step 1: Validate tickets and calculate refund amount
+        double totalRefundAmount = 0.0;
+        String validateTicketQuery = """
+            SELECT ticket_price
+            FROM Tickets
+            WHERE ticket_code = ? AND customer_code = ? AND status != 'refunded';
+        """;
+        try (PreparedStatement validateStmt = connection.prepareStatement(validateTicketQuery)) {
+            for (String ticketId : ticketIds) {
+                validateStmt.setInt(1, Integer.parseInt(ticketId.trim()));
+                validateStmt.setInt(2, customerId);
+                try (ResultSet rs = validateStmt.executeQuery()) {
+                    if (rs.next()) {
+                        double ticketPrice = rs.getDouble("ticket_price");
+                        double refundAmount = ticketPrice * (1 - REFUND_FEE_PERCENTAGE);
+                        totalRefundAmount += refundAmount;
+                    } else {
+                        System.out.printf("Ticket ID %s is invalid or already refunded. Aborting transaction.\n", ticketId);
+                        connection.rollback();
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Step 2: Update ticket statuses
+        String updateTicketQuery = "UPDATE Tickets SET status = 'refunded' WHERE ticket_code = ? AND customer_code = ?";
+        try (PreparedStatement ticketStmt = connection.prepareStatement(updateTicketQuery)) {
+            for (String ticketId : ticketIds) {
+                ticketStmt.setInt(1, Integer.parseInt(ticketId.trim()));
+                ticketStmt.setInt(2, customerId);
+                ticketStmt.executeUpdate();
+            }
+        }
+
+        // Step 3: Update concert available seats
+        String updateConcertQuery = """
+            UPDATE Concerts
+            SET tickets_available = tickets_available + ?
+            WHERE concert_code = (SELECT DISTINCT concert_code FROM Tickets WHERE ticket_code = ?);
+        """;
+        try (PreparedStatement concertStmt = connection.prepareStatement(updateConcertQuery)) {
+            for (String ticketId : ticketIds) {
+                concertStmt.setInt(1, 1); // Increase by 1 seat for each ticket refunded
+                concertStmt.setInt(2, Integer.parseInt(ticketId.trim()));
+                concertStmt.executeUpdate();
+            }
+        }
+
+        // Step 4: Record the refund transaction
+        String insertTransactionQuery = """
+            INSERT INTO Transactions (customer_code, transaction_type, transaction_status, transaction_date, total_amount)
+            VALUES (?, 'refund', 'closed', CURRENT_TIMESTAMP, ?);
+        """;
+        try (PreparedStatement transactionStmt = connection.prepareStatement(insertTransactionQuery)) {
+            transactionStmt.setInt(1, customerId);
+            transactionStmt.setDouble(2, totalRefundAmount);
+            transactionStmt.executeUpdate();
+        }
+
+        connection.commit();
+        System.out.printf("Refund successful. Total refunded amount: ₱%.2f (after %.0f%% fee).\n",
+                totalRefundAmount, REFUND_FEE_PERCENTAGE * 100);
+    } catch (SQLException e) {
+        try {
+            connection.rollback();
+        } catch (SQLException rollbackEx) {
+            System.err.println("Rollback failed: " + rollbackEx.getMessage());
+        }
+        System.err.println("Error processing refund: " + e.getMessage());
+    } finally {
+        try {
+            connection.setAutoCommit(true);
+        } catch (SQLException e) {
+            System.err.println("Error resetting auto-commit: " + e.getMessage());
+        }
     }
+}
 
     private void cancelConcert() {
         System.out.println("Concert Cancelling functionality is under development.");
