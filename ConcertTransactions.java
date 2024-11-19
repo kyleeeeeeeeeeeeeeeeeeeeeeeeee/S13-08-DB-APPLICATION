@@ -66,9 +66,96 @@ public class ConcertTransactions {
     }
 
     private void sellTickets() {
-        System.out.println("Ticket Selling functionality is under development.");
-        // Implement logic here
+        System.out.println("\n--- Sell Tickets ---");
+        int customerId = MyJDBC.getUserInput("Enter Customer ID: ");
+        int concertId = MyJDBC.getUserInput("Enter Concert ID: ");
+        try {
+            connection.setAutoCommit(false);
+            // Check concert validity and tickets are available
+            String validateConcertQuery = """
+                SELECT tickets_available
+                FROM Concerts
+                WHERE concert_code = ? AND status = 'approved';
+            """;
+            int ticketsAvailable = 0;
+            try (PreparedStatement ps = connection.prepareStatement(validateConcertQuery)) {
+                ps.setInt(1, concertId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        ticketsAvailable = rs.getInt("tickets_available");
+                        if (ticketsAvailable <= 0) {
+                            System.out.println("No tickets available for this concert.");
+                            connection.rollback();
+                            return;
+                        }
+                    } else {
+                        System.out.println("Concert not found or is not approved.");
+                        connection.rollback();
+                        return;
+                    }
+                }
+            }
+            // Insert ticket
+            String insertTicketQuery = """
+                INSERT INTO Tickets (concert_code, customer_code, transaction_code, ticket_price, seat_number, status)
+                VALUES (?, ?, ?, ?, ?, 'valid');
+            """;
+            try (PreparedStatement ps = connection.prepareStatement(insertTicketQuery)) {
+                String transactionCode = MyJDBC.getUserInput("Enter Transaction ID: ");
+                int ticketPrice = MyJDBC.getUserInput("Enter Ticket Price: ");
+                int seatNumber = MyJDBC.getUserInput("Enter Seat Number: ");
+
+                ps.setInt(1, concertId);
+                ps.setInt(2, customerId);
+                ps.setString(3, transactionCode);
+                ps.setInt(4, ticketPrice);
+                ps.setInt(5, seatNumber);
+                ps.executeUpdate();
+            }
+            // Decrement Concerts -> tickets_available
+            String updateConcertQuery = """
+                UPDATE Concerts
+                SET tickets_available = tickets_available - 1
+                WHERE concert_code = ?;
+            """;
+            try (PreparedStatement ps = connection.prepareStatement(updateConcertQuery)) {
+                ps.setInt(1, concertId);
+                ps.executeUpdate();
+            }
+            // Record ticket sale to transactions
+            String insertTransactionQuery = """
+                INSERT INTO Transactions (customer_code, transaction_type, transaction_status, transaction_date, total_amount, payment_method, refund_reason)
+                VALUES (?, 'buy', 'closed', CURRENT_DATETIME, ?, ?, ?);
+            """;
+            try (PreparedStatement ps = connection.prepareStatement(insertTransactionQuery)) {
+                String payMethod = MyJDBC.getUserStringInput("Enter Payment Method: ");
+                String refundReason = "N/A"
+
+                ps.setInt(1, customerId);
+                ps.setInt(2, ticketPrice);
+                ps.setString(3, payMethod);
+                ps.setString(4, refundReason);
+                ps.executeUpdate();
+            }
+            connection.commit(); // Commit transaction
+            System.out.println("Ticket sale completed successfully.");
+
+        } catch (SQLException e) {
+            try {
+                connection.rollback(); // Rollback transaction on error
+            } catch (SQLException rollbackEx) {
+                System.err.println("Rollback failed: " + rollbackEx.getMessage());
+            }
+            System.err.println("Error selling ticket: " + e.getMessage());
+        } finally {
+            try {
+                connection.setAutoCommit(true); // Restore default auto-commit
+            } catch (SQLException e) {
+                System.err.println("Error resetting auto-commit: " + e.getMessage());
+            }
+        }
     }
+
 
 private void refundTickets() {
     System.out.println("\n--- Refund Tickets ---");
