@@ -161,8 +161,64 @@ private void refundTickets() {
 }
 
     private void cancelConcert() {
-        System.out.println("Concert Cancelling functionality is under development.");
+   //     System.out.println("Concert Cancelling functionality is under development.");
         // Implement logic here
+        int concertCode = MyJDBC.getUserInput("Enter Concert Code to cancel: ");
+
+        try {
+            connection.setAutoCommit(false);    
+    
+            // Update concert status
+            String updateConcertQuery = "UPDATE Concerts SET status = 'cancelled' WHERE concert_code = ?";   
+            try (PreparedStatement ps = connection.prepareStatement(updateConcertQuery)) {
+                ps.setInt(1, concertCode);
+                ps.executeUpdate();
+            }
+    
+            // Update tickets' statuses
+            String updateTicketsQuery = "UPDATE Tickets SET status = 'refunded' WHERE concert_code = ?";
+            try (PreparedStatement ps = connection.prepareStatement(updateTicketsQuery)) {
+                ps.setInt(1, concertCode);
+                ps.executeUpdate();
+            }
+    
+            // Record the refund transaction
+            String insertTransactionQuery = """
+                    INSERT INTO Transactions (transaction_type, transaction_status, transaction_date, total_amount)
+                    VALUES ('cancel', 'closed', CURRENT_TIMESTAMP, ?)
+                    """;
+            // Calculate total refund
+            String calculateRefundQuery = "SELECT SUM(ticket_price) FROM Tickets WHERE concert_code = ?";
+            try (PreparedStatement ps = connection.prepareStatement(calculateRefundQuery)) {
+                ps.setInt(1, concertCode);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        double totalRefund = rs.getDouble(1);
+                        try (PreparedStatement insertPs = connection.prepareStatement(insertTransactionQuery)) {
+                            insertPs.setDouble(1, totalRefund);
+                            insertPs.executeUpdate();
+                        }
+                    }
+                }
+            }
+    
+            connection.commit();
+            System.out.println("Concert canceled and refunds processed.");
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                System.err.println("Rollback failed: " + rollbackEx.getMessage());
+            }
+            System.err.println("Error canceling concert: " + e.getMessage());
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                System.err.println("Error resetting auto-commit: " + e.getMessage());
+            }
+        }
+
     }
 
     // Handles the flow for transferring tickets
