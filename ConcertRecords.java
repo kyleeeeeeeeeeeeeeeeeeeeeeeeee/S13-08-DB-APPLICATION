@@ -72,11 +72,40 @@ public class ConcertRecords {
         // Implement logic here
     }
 
-    private void customerRecord() {
-        System.out.println("Customer Record functionality is under development.");
-        // Implement logic here
-    }
+private void customerRecord() {
+    System.out.println("\n--- Customer Record ---");
+    int customerId = MyJDBC.getUserInput("Enter Customer ID to view: ");
+    String query = """
+        SELECT 
+            Customers.customer_code, Customers.first_name, Customers.last_name, Customers.email, Customers.contact_number,
+            Tickets.ticket_code, Tickets.seat_number, Tickets.status
+        FROM Customers
+        LEFT JOIN Tickets ON Customers.customer_code = Tickets.customer_code
+        WHERE Customers.customer_code = ?;
+    """;
 
+    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        stmt.setInt(1, customerId);
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                System.out.printf("\nCustomer ID: %d\nName: %s %s\nEmail: %s\nContact: %s\n",
+                        rs.getInt("customer_code"), rs.getString("first_name"), rs.getString("last_name"),
+                        rs.getString("email"), rs.getString("contact_number"));
+
+                System.out.println("\n--- Tickets Owned ---");
+                do {
+                    System.out.printf("Ticket Code: %d | Seat: %d | Status: %s\n",
+                            rs.getInt("ticket_code"), rs.getInt("seat_number"), rs.getString("status"));
+                } while (rs.next());
+            } else {
+                System.out.println("No customer record found for the given ID.");
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Error fetching customer record: " + e.getMessage());
+    }
+}
+    
     private void transactionRecord() {
         System.out.println("Transaction Record functionality is under development.");
         // Implement logic here
