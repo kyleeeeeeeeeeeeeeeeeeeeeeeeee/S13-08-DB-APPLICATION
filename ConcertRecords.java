@@ -73,8 +73,48 @@ public class ConcertRecords {
     }
 
     private void concertRecord() {
-        System.out.println("Concert Record functionality is under development.");
-        // Implement logic here
+        System.out.println("\n--- Concert Record ---");
+        int concertId = MyJDBC.getUserInput("Enter Concert ID to view: ");
+
+        String query = """
+            SELECT concert_code, performer_name, genre, entry_restrictions, venue, date_time, tickets_available
+            FROM Concerts
+            WHERE concert_code = ?;
+        """;
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, concertId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    System.out.printf("\nConcert Code: %d\n", rs.getInt("concert_code"));
+                    System.out.println("Performer(s): " + rs.getString("performer_name"));
+                    System.out.println("Genre: " + rs.getString("genre"));
+                    System.out.println("Entry Restrictions: " + rs.getString("entry_restrictions"));
+                    System.out.println("Venue: " + rs.getString("venue"));
+                    System.out.println("Date and Time: " + rs.getTimestamp("date_time"));
+                    System.out.println("Tickets Available: " + rs.getInt("tickets_available"));
+
+                    String customerQuery = """
+                        SELECT Customers.first_name, Customers.last_name
+                        FROM Customers
+                        JOIN Tickets ON Customers.customer_code = Tickets.customer_code
+                        WHERE Tickets.concert_code = ?;
+                    """;
+                    try (PreparedStatement customerStmt = connection.prepareStatement(customerQuery)) {
+                        customerStmt.setInt(1, concertId);
+                        try (ResultSet customerRs = customerStmt.executeQuery()) {
+                            System.out.println("\n--- Customers Who Bought Tickets ---");
+                            while (customerRs.next()) {
+                                System.out.println(customerRs.getString("first_name") + " " + customerRs.getString("last_name"));
+                            }
+                        }
+                    }
+                } else {
+                    System.out.println("No concert found for the given Concert ID.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching concert record: " + e.getMessage());
+        }
     }
 
 private void customerRecord() {
