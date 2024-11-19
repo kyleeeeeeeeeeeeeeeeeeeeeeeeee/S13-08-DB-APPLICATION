@@ -3,7 +3,7 @@ CREATE DATABASE IF NOT EXISTS `concerttix`;
 USE `concerttix`;
 
 CREATE TABLE IF NOT EXISTS Companies (
-    company_code INT PRIMARY KEY,
+    company_code INT AUTO_INCREMENT PRIMARY KEY,
     company_name VARCHAR(50),
     address_line1 VARCHAR(50),
     address_line2 VARCHAR(50),
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS Companies (
 );
 
 CREATE TABLE IF NOT EXISTS Artists (
-    artist_code INT PRIMARY KEY,
+    artist_code INT AUTO_INCREMENT PRIMARY KEY,
     company_code INT,
     stage_name VARCHAR(50),
     first_name VARCHAR(50),
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS Artists (
 );
 
 CREATE TABLE IF NOT EXISTS Venues (
-    venue_code INT PRIMARY KEY,
+    venue_code INT AUTO_INCREMENT PRIMARY KEY,
     venue_name VARCHAR(50),
     address_line1 VARCHAR(50),
     street VARCHAR(50),
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS Venues (
 );
 
 CREATE TABLE IF NOT EXISTS Concerts (
-    concert_code INT PRIMARY KEY,
+    concert_code INT AUTO_INCREMENT PRIMARY KEY,
     artist_code INT,
     venue_code INT,
     performer_name VARCHAR(50),
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS Concerts (
 );
 
 CREATE TABLE IF NOT EXISTS Customers (
-    customer_code INT PRIMARY KEY,
+    customer_code INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
     email VARCHAR(50),
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS Customers (
 );
 
 CREATE TABLE IF NOT EXISTS Transactions (
-    transaction_code INT PRIMARY KEY,
+    transaction_code INT AUTO_INCREMENT PRIMARY KEY,
     customer_code INT,
     transaction_type ENUM('buy', 'refund', 'transfer', 'cancel'),
     transaction_status ENUM('open', 'closed'),
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS Transactions (
 );
 
 CREATE TABLE IF NOT EXISTS Tickets (
-    ticket_code INT PRIMARY KEY,
+    ticket_code INT AUTO_INCREMENT PRIMARY KEY,
     concert_code INT,
     customer_code INT,
     transaction_code INT,
