@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS Concerts (
     end_time DATETIME,
     tickets_available INT,
     total_seats INT,
-    status ENUM('approved', 'cancelled'),
+    status ENUM('approved', 'cancelled', 'concluded'),
     FOREIGN KEY (artist_code) REFERENCES Artists(artist_code),
     FOREIGN KEY (venue_code) REFERENCES Venues(venue_code)
 );
@@ -98,7 +98,8 @@ VALUES
 INSERT INTO Artists (artist_code, company_code, stage_name, first_name, last_name, birth_date, email, contact_number, nationality) 
 VALUES
 (1, 1, 'Juan Dela Cruz', 'Juan', 'Dela Cruz', '1992-05-10', 'juan.dc@phmusicent.com', '09211234567', 'Filipino'),
-(2, 2, 'Taylor Beats', 'Taylor', 'Adams', '1988-03-14', 'taylor.adams@globalsound.com', '+14151234567', 'American');
+(2, 2, 'Taylor Beats', 'Taylor', 'Adams', '1988-03-14', 'taylor.adams@globalsound.com', '+14151234567', 'American'),
+(3, 2, 'Ado Hibana', 'Ado', 'Hibana', '1999-10-24', 'ado.hibana@globalsound.com', '+81312345678', 'Japanese');
 
 INSERT INTO Venues (venue_code, venue_name, address_line1, street, city, province, barangay, postal_code, total_seating_capacity) 
 VALUES
@@ -108,19 +109,24 @@ VALUES
 INSERT INTO Concerts (concert_code, artist_code, venue_code, performer_name, genre, entry_restrictions, start_time, end_time, tickets_available, total_seats, status) 
 VALUES
 (1, 1, 1, 'Juan Dela Cruz Live', 'OPM', 'G', '2024-12-10 19:00:00', '2024-12-10 22:00:00', 14000, 15000, 'approved'),
-(2, 2, 2, 'Taylor Beats World Tour', 'Pop', '18+', '2024-12-20 20:00:00', '2024-12-20 23:00:00', 18000, 20000, 'approved');
+(2, 2, 2, 'Taylor Beats World Tour', 'Pop', '18+', '2024-12-20 20:00:00', '2024-12-20 23:00:00', 18000, 20000, 'approved'),
+(3, 3, 1, 'Ado Hibana World Tour 2025', 'J-Pop', 'G', '2025-05-08 18:00:00', '2025-05-08 23:59:00', 9999, 10000, 'approved');
 
 INSERT INTO Customers (customer_code, first_name, last_name, email, contact_number) 
 VALUES
 (1, 'Pedro', 'Santos', 'pedro.santos@gmail.com', '09181234567'),
-(2, 'Maria', 'Lopez', 'maria.lopez@gmail.com', '09181237890');
+(2, 'Maria', 'Lopez', 'maria.lopez@gmail.com', '09181237890'),
+(3, 'Max', 'Chavez', 'epicstrykermaxy@gmail.com', '09901327543');
 
 INSERT INTO Transactions (transaction_code, customer_code, transaction_type, transaction_status, transaction_date, total_amount, payment_method, refund_reason) 
 VALUES
 (1, 1, 'buy', 'closed', '2024-11-15 14:30:00', 750.00, 'cash', NULL),
-(2, 2, 'buy', 'closed', '2024-11-16 10:00:00', 1500.00, 'bank_transfer', NULL);
+(2, 2, 'buy', 'closed', '2024-11-16 10:00:00', 1500.00, 'bank_transfer', NULL),
+(3, 1, 'transfer', 'closed', '2024-11-17 14:30:00', 100.00, 'cash', NULL),
+(4, 2, 'transfer', 'closed', '2024-11-17 10:00:00', 100.00, 'card', NULL),
+(5, 3, 'refund', 'closed', '2024-11-19 10:00:00', 100.00, 'bank_transfer', 'wala lang');
 
 INSERT INTO Tickets (ticket_code, concert_code, customer_code, transaction_code, ticket_price, seat_number, status) 
 VALUES
 (1, 1, 1, 1, 750.00, 101, 'valid'),
-(2, 2, 2, 2, 1500.00, 202, 'valid');
+(2, 2, 3, 2, 1500.00, 202, 'refunded');
