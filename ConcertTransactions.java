@@ -69,6 +69,8 @@ public class ConcertTransactions {
         System.out.println("\n--- Sell Tickets ---");
         int customerId = MyJDBC.getUserInput("Enter Customer ID: ");
         int concertId = MyJDBC.getUserInput("Enter Concert ID: ");
+        int ticketPrice = 0; //potentially out of scope logic error i havent tested this yet
+
         try {
             connection.setAutoCommit(false);
             // Check concert validity and tickets are available
