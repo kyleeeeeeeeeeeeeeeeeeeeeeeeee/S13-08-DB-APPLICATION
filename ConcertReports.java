@@ -65,10 +65,74 @@ public class ConcertReports {
         }
     }
 
-    private void annualSales() {
-        System.out.println("Annual Sales Report functionality is under development.");
-        // Implement the logic here
+    private String getMonthName(int month) {
+        return switch (month) {
+            case 1 -> "January";
+            case 2 -> "February";
+            case 3 -> "March";
+            case 4 -> "April";
+            case 5 -> "May";
+            case 6 -> "June";
+            case 7 -> "July";
+            case 8 -> "August";
+            case 9 -> "September";
+            case 10 -> "October";
+            case 11 -> "November";
+            case 12 -> "December";
+            default -> "N/A";
+        };
     }
+
+    private void annualSales() {
+        System.out.println("\n--- Annual Sales Report ---");
+        int year = MyJDBC.getUserInput("Enter year for the report: ");
+
+        String query = """
+        SELECT 
+            MONTH(transaction_date) AS month,
+            SUM(total_amount) AS total_sales,
+            COUNT(transaction_code) AS tickets_sold
+        FROM Transactions
+        WHERE transaction_type = 'buy'
+          AND transaction_status = 'closed'
+          AND YEAR(transaction_date) = ?
+        GROUP BY MONTH(transaction_date)
+        ORDER BY MONTH(transaction_date);
+    """;
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, year);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                System.out.println("\n--- Sales Report for Year: " + year + " ---");
+                System.out.printf("%-10s | %-15s | %-15s%n", "Month", "Total Sales", "Tickets Sold");
+                System.out.println("-----------------------------------------------");
+
+                int yearlyTotal = 0;
+                int yearlyTickets = 0;
+
+                while (rs.next()) {
+                    int month = rs.getInt("month");
+                    int totalSales = rs.getInt("total_sales");
+                    int ticketsSold = rs.getInt("tickets_sold");
+
+                    yearlyTotal += totalSales;
+                    yearlyTickets += ticketsSold;
+
+                    System.out.printf("%-10s | %-15d | %-15d%n", getMonthName(month), totalSales, ticketsSold);
+                }
+
+                System.out.println("-----------------------------------------------");
+                System.out.printf("%-10s | %-15d | %-15d%n", "Total", yearlyTotal, yearlyTickets);
+
+            } catch (SQLException e) {
+                System.err.println("Error fetching sales data: " + e.getMessage());
+            }
+        } catch (SQLException e) {
+            System.err.println("Error preparing sales report: " + e.getMessage());
+        }
+    }
+
 
 private void concertAnalysis() {
     System.out.println("\n--- Concert Analysis Report ---");
