@@ -170,9 +170,47 @@ private void concertAnalysis() {
 }
 
     private void topSales() {
-        System.out.println("Top Sales Report functionality is under development.");
-        // Implement the logic here
-    }
+            System.out.println("\n--- Top Selling Concerts Report ---");
+        
+            int year = MyJDBC.getUserInput("Enter year for the report: ");
+            String query = """
+                SELECT 
+                    Concerts.concert_code,
+                    Concerts.performer_name,
+                    SUM(Transactions.total_amount) AS total_sales
+                FROM Concerts
+                JOIN Transactions ON Concerts.concert_code = Transactions.concert_code
+                WHERE YEAR(Transactions.transaction_date) = ?
+                  AND Transactions.transaction_type = 'buy'
+                  AND Transactions.transaction_status = 'closed'
+                GROUP BY Concerts.concert_code, Concerts.performer_name
+                ORDER BY total_sales DESC;
+            """;
+        
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setInt(1, year);
+        
+                try (ResultSet rs = stmt.executeQuery()) {
+                    System.out.printf("\n%-15s %-25s %-15s\n", "Concert Code", "Performer", "Total Sales");
+                    System.out.println("-------------------------------------------------------------");
+        
+                    boolean hasResults = false;
+                    while (rs.next()) {
+                        hasResults = true;
+                        System.out.printf("%-15d %-25s ₱%-15.2f\n",
+                                rs.getInt("concert_code"),
+                                rs.getString("performer_name"),
+                                rs.getDouble("total_sales"));
+                    }
+        
+                    if (!hasResults) {
+                        System.out.println("No sales data found for the given year.");
+                    }
+                }
+            } catch (SQLException e) {
+                System.err.println("Error generating top sales report: " + e.getMessage());
+            }
+        }
 
     private void customerEngagement() {
         System.out.println("\n--- Customer Engagement Report ---");
