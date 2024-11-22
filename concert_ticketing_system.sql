@@ -109,6 +109,12 @@ CREATE TABLE IF NOT EXISTS Tickets (
     UNIQUE (concert_code, seat_number)
 );
 
+CREATE TABLE IF NOT EXISTS Refunds (
+    refund_code INT AUTO_INCREMENT PRIMARY KEY,
+    transaction_code INT,
+    FOREIGN KEY (transaction_code) REFERENCES Transactions(transaction_code) ON DELETE CASCADE
+);
+
 
 
 
@@ -149,21 +155,22 @@ VALUES
 -- Populate Venues table
 INSERT INTO Venues (venue_name, street, city, province, barangay, postal_code, total_seating_capacity)
 VALUES
-('Mall of Asia Arena', 'Seaside Blvd', 'Pasay City', 'Metro Manila', 'Barangay 76', '1300', 20000),
-('Araneta Coliseum', 'General Araneta St', 'Quezon City', 'Metro Manila', 'Barangay Socorro', '1109', 16500),
+('Mall of Asia Arena', 'Seaside Blvd', 'Pasay', 'Metro Manila', 'Barangay 76', '1300', 20000),
+('Araneta Coliseum', 'General Araneta St', 'Quezon', 'Metro Manila', 'Barangay Socorro', '1109', 16500),
 ('Cebu Coliseum', 'Osmeña Blvd', 'Cebu City', 'Cebu', 'Barangay Santo Niño', '6000', 10000),
-('SMX Convention Center', 'SM City Lanang', 'Davao City', 'Davao del Sur', 'Barangay Buhangin', '8000', 12000),
+('SMX Convention Center', 'SM City Lanang', 'Davao', 'Davao del Sur', 'Barangay Buhangin', '8000', 12000),
 ('Philippine Arena', 'Philippine Arena Access Road', 'Bocaue', 'Bulacan', 'Barangay Santa Maria', '3018', 55000),
-('Smart Araneta Coliseum', 'General Malvar St', 'Quezon City', 'Metro Manila', 'Barangay Socorro', '1109', 16000),
-('New Frontier Theater', 'General Aguinaldo Ave', 'Quezon City', 'Metro Manila', 'Barangay Socorro', '1109', 2500),
-('PICC Plenary Hall', 'CCP Complex, Roxas Blvd', 'Pasay City', 'Metro Manila', 'Barangay 13', '1307', 3500),
-('Waterfront Hotel and Casino', 'Salinas Dr', 'Cebu City', 'Cebu', 'Barangay Lahug', '6000', 6000),
-('De La Salle University - Yuchengco Hall', '2401 Taft Ave', 'Manila', 'Metro Manila', 'Barangay 38', '1004', 1500);
+('Smart Araneta Coliseum', 'General Malvar St', 'Quezon', 'Metro Manila', 'Barangay Socorro', '1109', 16000),
+('New Frontier Theater', 'General Aguinaldo Ave', 'Quezon', 'Metro Manila', 'Barangay Socorro', '1109', 2500),
+('PICC Plenary Hall', 'CCP Complex, Roxas Blvd', 'Pasay', 'Metro Manila', 'Barangay 13', '1307', 3500),
+('Waterfront Hotel and Casino', 'Salinas Dr', 'Cebu', 'Cebu', 'Barangay Lahug', '6000', 6000),
+('De La Salle University - Yuchengco Hall', '2401 Taft Ave', 'Manila', 'Metro Manila', 'Barangay 38', '1004', 1500),
+('Bahay ni Billy', '18 Eugenio Lopez Jr. Dr', 'Quezon', 'Metro Manila', 'Diliman', '1101', 3);
 
 -- Populate Concerts table
 INSERT INTO Concerts (artist_code, venue_code, concert_title, performer_name, entry_restrictions, concert_date, tickets_available, seating_capacity, status)
 VALUES
-(1, 1, 'Private Time with Moira', 'Moira Dela Torre', 'G', '2024-12-01', 0, 3, 'approved'),
+(1, 11, 'Private Time with Moira', 'Moira Dela Torre', 'G', '2024-12-01', 0, 3, 'approved'),
 (2, 2, 'Folk Waves Live', 'Ben&Ben', 'G', '2024-12-10', 12000, 12000, 'approved'),
 (3, 5, 'Kaikai Kitan Night', 'Ado', '18+', '2025-01-15', 50000, 50000, 'approved'),
 (4, 1, 'Alt-Jam Session', 'IV of Spades', 'G', '2024-12-05', 18000, 18000, 'approved'),
@@ -187,7 +194,7 @@ VALUES
 -- Populate AvailableVenues table
 INSERT INTO AvailableVenues (venue_code, concert_date, availability)
 VALUES
-(1, '2024-12-01', 'booked'),
+(11, '2024-12-01', 'booked'),
 (2, '2024-12-10', 'booked'),
 (5, '2025-01-15', 'booked'),
 (1, '2024-12-05', 'booked'),
@@ -242,7 +249,8 @@ VALUES
 (9, 'buy', '2024-11-28 13:30:00', 2200.00, 'card'),
 (10, 'buy', '2024-11-29 17:10:00', 30000.00, 'bank_transfer'),
 (1, 'buy', '2024-11-29 17:10:01', 30000.00, 'bank_transfer'),
-(2, 'buy', '2024-11-29 17:10:02', 30000.00, 'bank_transfer');
+(2, 'buy', '2024-11-29 17:10:02', 30000.00, 'bank_transfer'),
+(3, 'refund', '2024-11-23 14:30:00', 120.00, 'card');
 
 -- Populate Prices table with detailed ticket tiers for each concert
 INSERT INTO Prices (ticket_type, concert_code, price)
@@ -322,7 +330,7 @@ INSERT INTO Tickets (concert_code, transaction_code, ticket_type, seat_number, t
 VALUES
 (5, 1, 'Lower Box', 'LB245', 3500.00),
 (6, 2, 'Backstage', 'BS10', 10000.00),
-(14, 3, 'Not so VIP', 'NVIP42', 5000.00),
+(14, 13, 'Not so VIP', 'NVIP42', 5000.00),
 (10, 4, 'Tambayan', 'AA1', 4500.00),
 (10, 5, 'Rakrakan', 'A1', 6000.00),
 (7, 6, 'Platinum', 'C6', 8000.00),
@@ -332,3 +340,8 @@ VALUES
 (1, 10, 'VIP', '1', 30000.00),
 (1, 11, 'VIP', '2', 30000.00),
 (1, 12, 'VIP', '3', 30000.00);
+
+-- Populate Refunds table
+INSERT INTO Refunds (transaction_code)
+VALUES
+(3);
