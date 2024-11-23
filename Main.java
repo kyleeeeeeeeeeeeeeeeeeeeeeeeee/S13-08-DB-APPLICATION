@@ -1,8 +1,5 @@
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.InputMismatchException;
-
-//basically gawa na buong main menu
 
 public class Main {
 
@@ -48,7 +45,6 @@ public class Main {
             connection = MyJDBC.setupConnection();
         }
 
-        //mga files na toh na yung lalagyan niyo ng functions niyo
         ConcertRecords records = new ConcertRecords(connection);
         ConcertTransactions transactions = new ConcertTransactions(connection);
         ConcertReports reports = new ConcertReports(connection);

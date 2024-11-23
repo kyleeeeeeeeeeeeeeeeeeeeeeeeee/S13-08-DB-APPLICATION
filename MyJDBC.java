@@ -12,7 +12,7 @@ public class MyJDBC {
 
         Connection connection = null;
         while (connection == null){
-            System.out.print("Connection URL ('host':'portnumber'): ");
+            System.out.print("Connection URL ('host':'port number'): ");
             String url = sc.nextLine().trim();
 
             System.out.print("Username: ");
