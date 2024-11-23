@@ -112,7 +112,9 @@ CREATE TABLE IF NOT EXISTS Tickets (
 CREATE TABLE IF NOT EXISTS Refunds (
     refund_code INT AUTO_INCREMENT PRIMARY KEY,
     transaction_code INT,
-    FOREIGN KEY (transaction_code) REFERENCES Transactions(transaction_code) ON DELETE CASCADE
+    ticket_code INT,
+    FOREIGN KEY (transaction_code) REFERENCES Transactions(transaction_code) ON DELETE CASCADE,
+    FOREIGN KEY (ticket_code) REFERENCES Tickets(ticket_code) ON DELETE CASCADE
 );
 
 
@@ -249,8 +251,7 @@ VALUES
 (9, 'buy', '2024-11-28 13:30:00', 2200.00, 'card'),
 (10, 'buy', '2024-11-29 17:10:00', 30000.00, 'bank_transfer'),
 (1, 'buy', '2024-11-29 17:10:01', 30000.00, 'bank_transfer'),
-(2, 'buy', '2024-11-29 17:10:02', 30000.00, 'bank_transfer'),
-(3, 'refund', '2024-11-23 14:30:00', 120.00, 'card');
+(2, 'buy', '2024-11-29 17:10:02', 30000.00, 'bank_transfer');
 
 -- Populate Prices table with detailed ticket tiers for each concert
 INSERT INTO Prices (ticket_type, concert_code, price)
@@ -330,7 +331,7 @@ INSERT INTO Tickets (concert_code, transaction_code, ticket_type, seat_number, t
 VALUES
 (5, 1, 'Lower Box', 'LB245', 3500.00),
 (6, 2, 'Backstage', 'BS10', 10000.00),
-(14, 13, 'Not so VIP', 'NVIP42', 5000.00),
+(14, 3, 'Not so VIP', 'NVIP42', 5000.00),
 (10, 4, 'Tambayan', 'AA1', 4500.00),
 (10, 5, 'Rakrakan', 'A1', 6000.00),
 (7, 6, 'Platinum', 'C6', 8000.00),
@@ -340,8 +341,3 @@ VALUES
 (1, 10, 'VIP', '1', 30000.00),
 (1, 11, 'VIP', '2', 30000.00),
 (1, 12, 'VIP', '3', 30000.00);
-
--- Populate Refunds table
-INSERT INTO Refunds (transaction_code)
-VALUES
-(3);
